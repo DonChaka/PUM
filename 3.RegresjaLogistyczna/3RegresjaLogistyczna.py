@@ -21,7 +21,7 @@ def logistic_cost(predicted, actual):
 
 
 class MyLogisticRegression:
-    def __init__(self, learning_rate: float = 0.05, max_iterations: int = 100, min_cost_diff: float = 0.001,
+    def __init__(self, learning_rate: float = 0.05, max_iterations: int = 100, min_cost_diff: float = 1e-4,
                  cost_function: Callable = mse_cost):
         self.learning_rate = learning_rate
         self.max_iterations = max_iterations
@@ -33,10 +33,8 @@ class MyLogisticRegression:
 
     def fit(self, X, Y):
         if self.coef_ is None:
-            self.coef_ = np.random.normal(loc=1, scale=0.15, size=(1, X.shape[1]))
+            self.coef_ = np.random.normal(loc=1, scale=.15, size=(1, X.shape[1]))
             self.intercept_ = np.random.normal(loc=1, scale=0.15, size=1)
-            # self.theta = np.zeros((1, X.shape[1]))
-            # self.intercept = 0
 
         Y = Y.reshape(-1, 1)
         n = X.shape[0]
@@ -44,13 +42,8 @@ class MyLogisticRegression:
             preds = sigmoid(X.dot(self.coef_.T) + self.intercept_)
             cost = self.cost_function(preds, Y)
 
-            #gradients
             dW = 1/n * np.dot((preds - Y).T, X)
             dB = 1/n * np.sum(preds - Y)
-            # dW = (Y - preds)
-            # dW *= (preds)
-            # dW *= (1 - preds)
-            # dW = dW.T.dot(X)
 
             self.coef_ = self.coef_ - self.learning_rate * dW
             self.intercept_ = self.intercept_ - self.learning_rate * dB
@@ -58,11 +51,10 @@ class MyLogisticRegression:
             self.costs.append(cost)
 
             if len(self.costs) >= 2 and self.costs[-2] - self.costs[-1] < self.min_cost_diff:
-                # print(f'Finished after {i} iterations')
                 break
 
-            # if i % (self.max_iterations / 10) == 0:
-                # print("cost after ", i, "iteration is : ", cost)
+            if len(self.costs) >= 2 and self.costs[-1] > self.costs[-2]:
+                self.learning_rate /= 2
 
         return self
 
